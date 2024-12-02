@@ -1,0 +1,218 @@
+---
+title: "Witanowski - Day 15, Data: My Data"
+output: html_notebook
+---
+
+## For this map
+
+```{r include=FALSE}
+
+###################### Libraries 
+
+library(sf)
+library(tigris)
+library(tidycensus)
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+library(ggtext)
+library(glue)
+library(magick)
+library(ggpubr)
+library(terra)
+library(ggplot2)
+library(ggspatial)
+library(ggshadow)
+library(grid)
+library(extrafont)
+library(ggimage)
+library(patchwork)
+library(ggfx)
+library(elevatr)
+library(raster)
+
+
+```
+
+```{r echo=TRUE, fig.height=10, fig.width=13, message=FALSE, warning=FALSE, cache=FALSE}
+
+######################
+
+setwd("/Users/emmawit/Downloads")
+
+tidycensus::census_api_key("2303009ddac130ce0b80796be79521a5421131c9", overwrite = TRUE)
+
+######################
+
+monster <- st_read("monster/aaaa.shp")
+
+monster_projected <- st_transform(monster, crs = 26913)
+
+
+AZ_Tracts <- get_acs(
+  geography = "state",
+  variables = "B01003_001",
+  state = "AZ",
+  year = 2019,
+  output = "wide",
+  geometry = TRUE
+) %>%
+  sf::st_transform(crs = 26913)
+
+dem_az <- get_elev_raster(
+    locations = AZ_Tracts, 
+    z = 10,
+    clip = "locations")
+
+
+dem_az_projected <- projectRaster(dem_az, crs = 26913)
+
+dem_az_projected_downsampled <- aggregate(dem_az_projected, fact = 10, fun = mean)  # Increase 'fact' to downsample more
+
+dem_az_projected_df <- as.data.frame(dem_az_projected_downsampled, xy = TRUE)
+
+dem_az_extent <- st_bbox(dem_az_projected_downsampled)
+
+CA_Tracts <- get_acs(
+  geography = "state",
+  variables = "B01003_001",
+  state = "CA",
+  year = 2019,
+  output = "wide",
+  geometry = TRUE
+) %>%
+  sf::st_transform(crs = 26913)
+
+UT_Tracts <- get_acs(
+  geography = "state",
+  variables = "B01003_001",
+  state = "UT",
+  year = 2019,
+  output = "wide",
+  geometry = TRUE
+) %>%
+  sf::st_transform(crs = 26913)
+
+NM_Tracts <- get_acs(
+  geography = "state",
+  variables = "B01003_001",
+  state = "NM",
+  year = 2019,
+  output = "wide",
+  geometry = TRUE
+) %>%
+  sf::st_transform(crs = 26913)
+
+NV_Tracts <- get_acs(
+  geography = "state",
+  variables = "B01003_001",
+  state = "NV",
+  year = 2019,
+  output = "wide",
+  geometry = TRUE
+) %>%
+  sf::st_transform(crs = 26913)
+
+CO_Tracts <- get_acs(
+  geography = "state",
+  variables = "B01003_001",
+  state = "CO",
+  year = 2019,
+  output = "wide",
+  geometry = TRUE
+) %>%
+  sf::st_transform(crs = 26913)
+
+all_countries <- st_read("World_Countries_(Generalized)_9029012925078512962.geojson")
+all_countries <- st_transform(all_countries, crs = 'EPSG:26913')
+all_countries <- all_countries %>%
+  filter(COUNTRY %in% 'Mexico')
+
+
+gila <- data.frame(
+  x = -114.09748056136536,  
+  y = 31.44582843195054,  
+  image = "Gila-Monster2-TM-e1684968769387.png"  
+)
+
+gila_sf <- st_as_sf(gila, coords = c("x", "y"), crs = 4326)  
+
+gila_transformed <- st_transform(gila_sf, crs = 26913)
+
+gila_transformed_coords <- as.data.frame(st_coordinates(gila_transformed))
+gila_sf$x <- gila_transformed_coords$X
+gila_sf$y <- gila_transformed_coords$Y
+
+
+corner <- data.frame(
+  x = -114.23228932544299,  
+  y = 31.128661478055026,  
+  image = "corner.png"  
+)
+
+corner_sf <- st_as_sf(corner, coords = c("x", "y"), crs = 4326)  
+
+corner_transformed <- st_transform(corner_sf, crs = 26913)
+
+corner_transformed_coords <- as.data.frame(st_coordinates(corner_transformed))
+corner_sf$x <- corner_transformed_coords$X
+corner_sf$y <- corner_transformed_coords$Y
+
+
+
+ggplot() +
+  geom_raster(data = dem_az_projected_df, aes(x = x, y = y, fill = file5a1616e1b47d), alpha = 1) +
+  scale_fill_gradient(low = "#2f293b", high = "#82c9b2") +
+  with_shadow(
+    geom_sf(data = AZ_Tracts, fill = "transparent", lwd = .2, color = "#191328"),
+    colour = "white",        
+    x_offset = 4,            
+    y_offset = 4,            
+    sigma = 8,               
+    alpha = 1              
+  ) +
+  geom_sf(data = CA_Tracts, fill = "#2f293b", color = "#2f293b") +
+  geom_sf(data = UT_Tracts, fill = "#2f293b", color = "#2f293b") +
+  geom_sf(data = NM_Tracts, fill = "#2f293b", color = "#2f293b") +
+  geom_sf(data = NV_Tracts, fill = "#2f293b", color = "#2f293b") +
+  geom_sf(data = CO_Tracts, fill = "#2f293b", color = "#2f293b") +
+  geom_sf(data = all_countries, fill = "#2f293b", color = "#2f293b") +
+  geom_sf(data = monster_projected, color = "orange") +
+   with_shadow(
+    geom_sf(data = monster_projected, fill = "transparent", lwd = .2, color = "orange"),
+    colour = "orange",        
+    x_offset = 4,            
+    y_offset = 4,            
+    sigma = 8,               
+    alpha = 1              
+  ) +
+  geom_sf(data = monster_projected, color = "white", size = 0.5, alpha = 0.5) +
+  geom_image(
+    data = corner_sf,
+    aes(x = x, y = y, image = image),
+    size = 2.5
+  ) +
+  geom_image(
+    data = gila_sf,
+    aes(x = x, y = y, image = image),
+    size = .4
+  ) +
+  labs(
+    title = "GILA MONSTER LOCATIONS",
+    subtitle = "Heloderma suspectum - Arizona, United States"
+  ) +
+  theme_void()+
+  theme(
+    legend.position = "none",
+    plot.background = element_rect(fill = "#2f293b", color = NA), 
+    panel.background = element_rect(fill = "#2f293b", color = NA),
+    plot.margin = margin(t = -60, r = 0, b = 50, l = 0),
+    plot.title = element_text(hjust = 0.3, vjust = -142, size = 45, face = "bold", color = "#639589", family = "Impact"),
+    plot.subtitle = element_text(size = 10, vjust = -290, hjust = 0.1, color = "#445359", family = "Eina02-RegularItalic")
+  ) +
+  coord_sf(xlim = c(dem_az_extent$xmin, dem_az_extent$xmax), 
+           ylim = c(dem_az_extent$ymin, dem_az_extent$ymax), 
+           crs = st_crs(26913)) 
+
+```
+
