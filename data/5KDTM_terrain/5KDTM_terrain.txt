@@ -1,0 +1,344 @@
+Identification_Information:
+  Citation:
+    Citation_Information:
+      Originator: University of Rhode Island Environmental Data Center
+      Publication_Date: 20080813
+      Title: Digital Terrain Model of Rhode Island; 5KDTM_terrain
+      Geospatial_Data_Presentation_Form: ESRI digital terrain model
+      Publication_Information:
+        Publication_Place: Kingston, Rhode Island
+        Publisher: RIGIS
+      Other_Citation_Details:
+        Suggested bibliographic reference:
+        RIGIS, 2008.  Digital Terrain Model of Rhode Island; 5KDTM_terrain, Rhode Island Geographic Information System (RIGIS) Data Distribution System, URL: http:/rigis.org, University of Rhode Island, Kingston, Rhode Island (last date accessed: 13 August 2008).
+      Online_Linkage: http://www.rigis.org
+      Larger_Work_Citation:
+        Citation_Information:
+          Originator: Rhode Island Geographic Information System (RIGIS)
+          Publication_Date: 1993
+          Title: Rhode Island Geographic Information System (RIGIS) Data Distribution System
+          Online_Linkage: http://www.rigis.org
+  Description:
+    Abstract: This data set contains a digital terrain model of the State of Rhode Island presented in ESRI terrain format, saved within an ESRI 9.3 file geodatabase.  The terrain was derived from individual point locations and associated elevation values originally developed for the orthographic retification of aerial photography taken in 1997 of Rhode Island.
+    Purpose: These data may be used to support the generation of surface models and contours, or used to support the orthorectification of aerial photography.  Please note that these data were intended solely for the orthorectify aerial photographs collected at a map scale of 1:5000, and these data are not considered adequate by RIGIS for purposes other than general planning.
+  Time_Period_of_Content:
+    Time_Period_Information:
+      Range_of_Dates/Times:
+        Beginning_Date: 19970427
+        Ending_Date: 19970429
+    Currentness_Reference: ground condition
+  Status:
+    Progress: Complete
+    Maintenance_and_Update_Frequency: None planned
+  Spatial_Domain:
+    Bounding_Coordinates:
+      West_Bounding_Coordinate: -71.896602
+      East_Bounding_Coordinate: -71.117438
+      North_Bounding_Coordinate: 42.018935
+      South_Bounding_Coordinate: 41.146014
+  Keywords:
+    Theme:
+      Theme_Keyword_Thesaurus: ISO 19115 Topic Category
+      Theme_Keyword: elevation
+      Theme_Keyword: 006
+    Theme:
+      Theme_Keyword_Thesaurus: none
+      Theme_Keyword: digital terrain model
+      Theme_Keyword: mean height above sea level
+    Place:
+      Place_Keyword_Thesaurus: none
+      Place_Keyword: Rhode Island
+      Place_Keyword: United States
+  Access_Constraints: None
+  Use_Constraints:
+    Due to the scale, accuracy of the source data information contained should be used with caution.  These data may be used to support the generation of surface models and contours, or used to support the orthorectification of aerial photography.  Please note that these data were intended solely for the orthorectify aerial photographs collected at a map scale of 1:5000, and these data are not considered adequate by RIGIS for purposes other than general planning.  These data are estimated to be suitable for 3-meter accuracy for determination of general elevations.
+    Potential users are encouraged to evaluate the individual feature classes that were used to build this terrain, and judge for themselves as to whether or not these data suit their needs.
+    This dataset is provided 'as is.’ The producer(s) of this dataset, contributors to this dataset, the Rhode Island Geographic Information System (RIGIS) consortium, the State of Rhode Island, and the University of Rhode Island do not make any warranties of any kind for this dataset, and are not liable for any loss or damage however and whenever caused by any use of this dataset. Please acknowledge both RIGIS and the primary producer(s) of this dataset in any derived products. Versions of the RIGIS logo suitable for both printed and web-based products are available at http://www.edc.uri.edu/rigis/logos.
+  Point_of_Contact:
+    Contact_Information:
+      Contact_Person_Primary:
+        Contact_Person: Greg Bonynge
+        Contact_Organization: University of Rhode Island Environmental Data Center
+      Contact_Address:
+        Address_Type: mailing and physical address
+        Address: 1 Greenhouse Road
+        City: Kingston
+        State_or_Province: RI
+        Postal_Code: 02881
+      Contact_Voice_Telephone: 401-874-2180
+      Contact_Electronic_Mail_Address: greg@edc.uri.edu
+      Contact_Instructions: email preferred
+  Native_Data_Set_Environment: Microsoft Windows XP Version 5.1 (Build 2600) Service Pack 3; ESRI ArcCatalog 9.3.0.1770
+Data_Quality_Information:
+  Logical_Consistency_Report: Not completed.
+  Completeness_Report: Not completed.
+  Lineage:
+    Source_Information:
+      Source_Citation:
+        Citation_Information:
+          Originator: University of Rhode Island Environmental Data Center
+          Publication_Date: 20080813
+          Title: 5KDTM Mass Points
+          Geospatial_Data_Presentation_Form: vector digital data
+          Other_Citation_Details: Distributed by RIGIS as a subset of the 5KDTM_terrain file geodatabase.
+          Online_Linkage: http://www.edc.uri.edu/rigis
+          Larger_Work_Citation:
+            Citation_Information:
+              Originator: University of Rhode Island Environmental Data Center
+              Publication_Date: 20080813
+              Title: Digital Terrain Model of Rhode Island; 5KDTM_terrain
+              Geospatial_Data_Presentation_Form: ESRI digital terrain model
+              Publication_Information:
+                Publication_Place: Kingston, Rhode Island
+                Publisher: RIGIS
+              Other_Citation_Details:
+                Suggested bibliographic reference:
+                Bonynge, G., 2008.  Digital Terrain Model of Rhode Island; 5KDTM_terrain, Rhode Island Geographic Information System (RIGIS) Data Distribution System, URL: http://www.edc.uri.edu/rigis, University of Rhode Island, Kingston, Rhode Island (last date accessed: 13 August 2008).
+              Online_Linkage: http://www.edc.uri.edu/rigis
+      Source_Scale_Denominator: 5000
+      Type_of_Source_Media: vector digital data
+      Source_Time_Period_of_Content:
+        Time_Period_Information:
+          Range_of_Dates/Times:
+            Beginning_Date: 19970427
+            Ending_Date: 19970429
+        Source_Currentness_Reference: ground condition
+      Source_Citation_Abbreviation: mass points
+      Source_Contribution: x, y, and z information for individual digital elevation mass point locations.
+    Source_Information:
+      Source_Citation:
+        Citation_Information:
+          Originator: University of Rhode Island Environmental Data Center
+          Publication_Date: 20080813
+          Title: 5KDTM Hard Breaklines
+          Geospatial_Data_Presentation_Form: vector digital data
+          Other_Citation_Details: Distributed by RIGIS as a subset of the 5KDTM_terrain file geodatabase.
+          Online_Linkage: http://www.edc.uri.edu/rigis
+          Larger_Work_Citation:
+            Citation_Information:
+              Originator: University of Rhode Island Environmental Data Center
+              Publication_Date: 20080813
+              Title: Digital Terrain Model of Rhode Island; 5KDTM_terrain
+              Geospatial_Data_Presentation_Form: ESRI digital terrain model
+              Publication_Information:
+                Publication_Place: Kingston, Rhode Island
+                Publisher: RIGIS
+              Other_Citation_Details:
+                Suggested bibliographic reference:
+                Bonynge, G., 2008.  Digital Terrain Model of Rhode Island; 5KDTM_terrain, Rhode Island Geographic Information System (RIGIS) Data Distribution System, URL: http://www.edc.uri.edu/rigis, University of Rhode Island, Kingston, Rhode Island (last date accessed: 13 August 2008).
+              Online_Linkage: http://www.edc.uri.edu/rigis
+      Source_Scale_Denominator: 5000
+      Type_of_Source_Media: vector digital data
+      Source_Time_Period_of_Content:
+        Time_Period_Information:
+          Range_of_Dates/Times:
+            Beginning_Date: 19970427
+            Ending_Date: 19970429
+        Source_Currentness_Reference: ground condition
+      Source_Citation_Abbreviation: hard breaklines
+      Source_Contribution: x, y, and z information for hard breakline features
+    Source_Information:
+      Source_Citation:
+        Citation_Information:
+          Originator: University of Rhode Island Environmental Data Center
+          Publication_Date: 20080813
+          Title: 5KDTM Soft Breaklines
+          Geospatial_Data_Presentation_Form: vector digital data
+          Other_Citation_Details: Distributed by RIGIS as a subset of the 5KDTM_terrain file geodatabase.
+          Online_Linkage: http://www.edc.uri.edu/rigis
+          Larger_Work_Citation:
+            Citation_Information:
+              Originator: University of Rhode Island Environmental Data Center
+              Publication_Date: 20080813
+              Title: Digital Terrain Model of Rhode Island; 5KDTM_terrain
+              Geospatial_Data_Presentation_Form: ESRI digital terrain model
+              Publication_Information:
+                Publication_Place: Kingston, Rhode Island
+                Publisher: RIGIS
+              Other_Citation_Details:
+                Suggested bibliographic reference:
+                Bonynge, G., 2008.  Digital Terrain Model of Rhode Island; 5KDTM_terrain, Rhode Island Geographic Information System (RIGIS) Data Distribution System, URL: http://www.edc.uri.edu/rigis, University of Rhode Island, Kingston, Rhode Island (last date accessed: 13 August 2008).
+              Online_Linkage: http://www.edc.uri.edu/rigis
+      Source_Scale_Denominator: 5000
+      Type_of_Source_Media: vector digital data
+      Source_Time_Period_of_Content:
+        Time_Period_Information:
+          Range_of_Dates/Times:
+            Beginning_Date: 19970427
+            Ending_Date: 19970429
+        Source_Currentness_Reference: ground condition
+      Source_Citation_Abbreviation: soft breaklines
+      Source_Contribution: x, y, and z information for soft breakline features
+    Source_Information:
+      Source_Citation:
+        Citation_Information:
+          Originator: University of Rhode Island Environmental Data Center
+          Publication_Date: 20080813
+          Title: Dissolved 1:5000 Boundary of Rhode Island
+          Geospatial_Data_Presentation_Form: vector digital data
+          Other_Citation_Details: Distributed by RIGIS as a subset of the 5KDTM_terrain file geodatabase.
+          Online_Linkage: http://www.edc.uri.edu/rigis
+          Larger_Work_Citation:
+            Citation_Information:
+              Originator: University of Rhode Island Environmental Data Center
+              Publication_Date: 20080813
+              Title: Digital Terrain Model of Rhode Island; 5KDTM_terrain
+              Geospatial_Data_Presentation_Form: ESRI digital terrain model
+              Publication_Information:
+                Publication_Place: Kingston, Rhode Island
+                Publisher: RIGIS
+              Other_Citation_Details:
+                Suggested bibliographic reference:
+                Bonynge, G., 2008.  Digital Terrain Model of Rhode Island; 5KDTM_terrain, Rhode Island Geographic Information System (RIGIS) Data Distribution System, URL: http://www.edc.uri.edu/rigis, University of Rhode Island, Kingston, Rhode Island (last date accessed: 13 August 2008).
+              Online_Linkage: http://www.edc.uri.edu/rigis
+      Source_Scale_Denominator: 5000
+      Type_of_Source_Media: vector digital data
+      Source_Time_Period_of_Content:
+        Time_Period_Information:
+          Range_of_Dates/Times:
+            Beginning_Date: 19970427
+            Ending_Date: 19970429
+        Source_Currentness_Reference: ground condition
+      Source_Citation_Abbreviation: boundary
+      Source_Contribution: Coastline and inland State political boundary of Rhode Island.
+    Process_Step:
+      Process_Description:
+        1) A new feature dataset, terrain_5KDTM, was created in an existing file geodatabase using ESRI ArcGIS 9.3 Desktop.
+        2) The boundary, mass points, hard breaklines, and soft breaklines feature classes were imported into the new feature dataset.
+
+        3) A new terrain feature class was using the following settings:
+        A) Selected boundary, mass points, hard breaklines, and soft breaklines as feature classes that would participate in the terrain.
+        B) Used an approximate point spacing of 40 feet (Vinhaterio 2008).
+        C) Specified mass points feature class as SFType = mass points; hard breaklines as SFType = hard line; soft breaklines as SFType = soft line; boundary as SFType = soft clip.
+        4) Built the terrain using the default pyramid levels as presented by the software.
+        PLEASE NOTE: FGDC compliant metadata for the feature classes used to build the terrain are present within the file geodatabase itself.  The metadata are viewable by using ESRI ArcCatalog to first highlight the feature class of interest within the file geodatabase, then choosing the Metadata tab.
+        PLEASE ALSO NOTE: Users of this terrain feature class may wish to rebuild the terrain using their own breaklines and/or average point spacing information.  This is possible by using the ESRI ArcGIS 9.3 3D Analyst Terrain tools.
+      Source_Used_Citation_Abbreviation: mass points, hard breaklines, soft breaklines, boundary
+      Process_Date: 20080807
+      Process_Contact:
+        Contact_Information:
+          Contact_Organization_Primary:
+            Contact_Organization: University of Rhode Island Environmental Data Center
+            Contact_Person: Greg Bonynge
+          Contact_Address:
+            Address_Type: mailing and physical
+            Address: 1 Greenhouse Road
+            City: Kingston
+            State_or_Province: RI
+            Postal_Code: 02881
+          Contact_Voice_Telephone: 401-874-2180
+          Contact_Electronic_Mail_Address: greg@edc.uri.edu
+          Contact_Instructions: email preferred
+Spatial_Data_Organization_Information:
+  Direct_Spatial_Reference_Method: Vector
+  Point_and_Vector_Object_Information:
+    SDTS_Terms_Description:
+      SDTS_Point_and_Vector_Object_Type: Composite object
+      Point_and_Vector_Object_Count: 101
+    SDTS_Terms_Description:
+      SDTS_Point_and_Vector_Object_Type: String
+      Point_and_Vector_Object_Count: 132271
+    SDTS_Terms_Description:
+      SDTS_Point_and_Vector_Object_Type: String
+      Point_and_Vector_Object_Count: 152542
+    SDTS_Terms_Description:
+      SDTS_Point_and_Vector_Object_Type: G-polygon
+      Point_and_Vector_Object_Count: 1
+Spatial_Reference_Information:
+  Horizontal_Coordinate_System_Definition:
+    Planar:
+      Map_Projection:
+        Map_Projection_Name: Transverse Mercator
+        Transverse_Mercator:
+          Scale_Factor_at_Central_Meridian: 0.999994
+          Longitude_of_Central_Meridian: -71.500000
+          Latitude_of_Projection_Origin: 41.083333
+          False_Easting: 328083.333333
+          False_Northing: 0.000000
+      Planar_Coordinate_Information:
+        Planar_Coordinate_Encoding_Method: coordinate pair
+        Coordinate_Representation:
+          Abscissa_Resolution: 0.000328
+          Ordinate_Resolution: 0.000328
+        Planar_Distance_Units: survey feet
+    Geodetic_Model:
+      Horizontal_Datum_Name: North American Datum of 1983
+      Ellipsoid_Name: Geodetic Reference System 80
+      Semi-major_Axis: 6378137.000000
+      Denominator_of_Flattening_Ratio: 298.257222
+  Vertical_Coordinate_System_Definition:
+    Altitude_System_Definition:
+      Altitude_Datum_Name: North American Vertical Datum of 1988
+      Altitude_Resolution: 0.000100
+      Altitude_Distance_Units: survey foot
+      Altitude_Encoding_Method: Explicit elevation coordinate included with horizontal coordinates
+Entity_and_Attribute_Information:
+  Detailed_Description:
+    Entity_Type:
+      Entity_Type_Label: masspoints
+      Entity_Type_Definition: Mass point point locations
+      Entity_Type_Definition_Source: Bonynge 2008
+  Detailed_Description:
+    Entity_Type:
+      Entity_Type_Label: hard_breaklines
+      Entity_Type_Definition: hard breakline features
+      Entity_Type_Definition_Source: Bonynge 2008
+  Detailed_Description:
+    Entity_Type:
+      Entity_Type_Label: soft_breaklines
+      Entity_Type_Definition: soft breakline features
+      Entity_Type_Definition_Source: Bonynge 2008
+  Detailed_Description:
+    Entity_Type:
+      Entity_Type_Label: boundary
+      Entity_Type_Definition: Coastline and inland political boundary for the State of Rhode Island.
+      Entity_Type_Definition_Source: Bonynge 2008
+Distribution_Information:
+  Distributor:
+    Contact_Information:
+      Contact_Organization_Primary:
+        Contact_Organization: University of Rhode Island Environmental Data Center
+        Contact_Person: Erica Tefft
+      Contact_Address:
+        Address_Type: mailing and physical
+        Address: 1 Greenhouse Road
+        City: Kingston
+        State_or_Province: RI
+        Postal_Code: 02881
+      Contact_Voice_Telephone: 401-874-5054
+      Contact_Electronic_Mail_Address: erica@edc.uri.edu
+      Contact_Instructions: email preferred
+  Distribution_Liability: This dataset is provided 'as is.'  The producer(s) of this dataset, contributors to this dataset, the Rhode Island Geographic Information System (RIGIS) consortium, the State of Rhode Island, and the University of Rhode Island do not make any warranties of any kind for this dataset, and are not liable for any loss or damage however and whenever caused by any use of this dataset.
+  Standard_Order_Process:
+    Digital_Form:
+      Digital_Transfer_Information:
+        Format_Name: Esri shapefile
+        File_Decompression_Technique: ZIP
+      Digital_Transfer_Option:
+        Online_Option:
+          Computer_Contact_Information:
+            Network_Address:
+              Network_Resource_Name: http://www.edc.uri.edu/rigis
+    Fees: No fee for downloading directly from the RIGIS Data Distribution System located at http://www.edc.uri.edu/rigis.
+Metadata_Reference_Information:
+  Metadata_Date: 20080813
+  Metadata_Contact:
+    Contact_Information:
+      Contact_Organization_Primary:
+        Contact_Organization: University of Rhode Island Environmental Data Center
+        Contact_Person: Greg Bonynge
+      Contact_Address:
+        Address_Type: mailing and physical
+        Address: 1 Greenhouse Road
+        City: Kingston
+        State_or_Province: RI
+        Postal_Code: 02881
+      Contact_Voice_Telephone: 401-874-2180
+      Contact_Electronic_Mail_Address: greg@edc.uri.edu
+      Contact_Instructions: email preferred
+  Metadata_Standard_Name: FGDC Content Standards for Digital Geospatial Metadata
+  Metadata_Standard_Version: FGDC-STD-001-1998
+  Metadata_Time_Convention: local time
+  Metadata_Extensions:
+    Online_Linkage: http://www.esri.com/metadata/esriprof80.html
+    Profile_Name: ESRI Metadata Profile
