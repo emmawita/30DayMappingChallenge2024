@@ -1,0 +1,115 @@
+---
+title: "Witanowski - Day 28, The Blue Planet"
+output: html_notebook
+---
+
+```{r include=FALSE}
+
+knitr::opts_chunk$set(root.dir = "/Users/x/Downloads")
+
+###################### Libraries 
+
+library(sf)
+library(tigris)
+library(tidycensus)
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+library(ggtext)
+library(glue)
+library(magick)
+library(ggpubr)
+library(terra)
+library(ggplot2)
+library(ggspatial)
+library(ggshadow)
+library(grid)
+library(extrafont)
+library(ggimage)
+library(patchwork)
+library(ggfx)
+library(elevatr)
+library(raster)
+
+```
+
+```{r echo=TRUE, fig.height=10, fig.width=13, message=FALSE, warning=FALSE, cache=FALSE}
+
+######################
+
+setwd("/Users/x/Downloads")
+
+tidycensus::census_api_key("[enter key]", overwrite = TRUE)
+
+###################### Getting Data
+
+nepal_boundary <- st_read("nepal/nepal_boundary.shp")
+
+nepal_hydro <- st_read("nepal/nepal_hydro.shp")
+
+nepal_boundary2 <- nepal_boundary
+
+###################### Hillshade
+
+#Hillshade
+raster_data <- rast("SR_50M_2.tif")
+raster_crs <- crs(raster_data, proj = TRUE) 
+nepal_boundary2 <- st_transform(nepal_boundary2, crs = raster_crs)
+
+raster_clipped <- crop(raster_data, ext(nepal_boundary2))      
+raster_clipped <- mask(raster_clipped, vect(nepal_boundary2)) 
+
+target_crs <- "EPSG:3857"
+raster_projected <- project(raster_clipped, target_crs)
+
+raster_df <- as.data.frame(raster_projected, xy = TRUE)
+
+dem <- get_elev_raster(
+    locations = nepal_boundary, 
+    z = 10,
+    clip = "locations")
+
+dem_df <- as.data.frame(rasterToPoints(dem), xy = TRUE)
+colnames(dem_df) <- c("longitude", "latitude", "elevation")
+
+
+ggplot() +
+  with_shadow(
+    geom_sf(data = nepal_boundary, fill = "transparent", lwd = .6, color = "#9ba9ec"),
+    colour = "#9ba9ec",      
+    x_offset = 0,           
+    y_offset = 0,            
+    sigma = 8,               
+    alpha = 1              
+  ) +
+  with_shadow(
+    geom_sf(data = nepal_boundary, fill = "transparent", lwd = .3, color = "#06070d"),
+    colour = "#080a11",        
+    x_offset = 2,           
+    y_offset = 2,            
+    sigma = 8,              
+    alpha = 1             
+  ) +
+  geom_raster(data = dem_df, aes(x = longitude, y = latitude, fill = elevation)) +
+  scale_fill_gradient(
+    low = "#080a11",   
+    high = "#31364c",  
+    na.value = "transparent"  
+  ) +
+  geom_sf(data = nepal_boundary, color = "#080a11", fill = NA, size = 0.5) +  
+  geom_sf(data = nepal_hydro, color = "#b6bee9", alpha = 0.6) +  
+  theme_minimal() +
+  coord_sf() +
+  labs(title = "HYDROLOGY",
+       subtitle = "- of Nepal -")+
+  theme_void()+
+  theme(
+    legend.position = "none",
+    panel.background = element_rect(fill = "#06070d", color = NA),  # Background for plot panel
+    plot.background = element_rect(fill = "#06070d", color = NA),  # Background for the entire plot
+    plot.title = element_text(size = 60, face = "bold", hjust = 0.85, vjust = -7.5, color = "#b6bee9", family = "Domaine Display"), 
+    plot.subtitle = element_text(size = 20, hjust = 0.72, vjust = -23, color = "#6772a3", family = "Domaine Display"),
+    plot.margin = margin(t = -20, r = 10, b = 12, l = 10)  # Adjust margins
+  )
+
+```

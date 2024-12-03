@@ -1,0 +1,123 @@
+---
+title: "Witanowski - Day 01, Points"
+output: html_notebook
+---
+
+```{r}
+
+knitr::opts_chunk$set(root.dir = "/Users/x/Downloads")
+
+###################### Libraries 
+
+library(sf)
+library(tigris)
+library(tidycensus)
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+library(ggtext)
+library(glue)
+library(magick)
+library(ggpubr)
+library(terra)
+library(ggplot2)
+library(ggspatial)
+library(ggshadow)
+library(grid)
+library(extrafont)
+library(ggimage)
+library(patchwork)
+library(ggfx)
+library(elevatr)
+library(raster)
+
+```
+
+```{r fig.height=13, fig.width=10}
+
+######################
+
+setwd("/Users/x/Downloads")
+
+tidycensus::census_api_key("[enter key]", overwrite = TRUE)
+
+###################### Getting Data
+
+parks_geo <- st_read("ParkEntryPoints_4906187196488842302.geojson")
+
+crs <- st_crs("EPSG:5070")
+
+parks_geo_transformed <- st_transform(parks_geo, crs)
+
+Cali_tracts <- get_acs(
+  geography = "state",
+  variables = "B01003_001",
+  state = "CA",
+  year = 2019,
+  output = "wide",
+  geometry = TRUE
+) %>%
+  sf::st_transform(crs = 5070)
+
+Cali_tracts2 <- Cali_tracts
+
+all_countries <- st_read("World_Countries_(Generalized)_9029012925078512962.geojson")
+all_countries <- st_transform(all_countries, crs = 'EPSG:5070')
+all_countries <- all_countries %>%
+  filter(COUNTRY %in% c('Canada', 'United States', 'Mexico', 'Cuba', 'Bahamas', 'Haiti'))
+
+#Hillshade
+raster_data <- rast("SR_50M.tif")
+raster_crs <- crs(raster_data, proj = TRUE) 
+Cali_tracts2_transformed <- st_transform(Cali_tracts2, crs = raster_crs)
+
+raster_clipped <- crop(raster_data, ext(Cali_tracts2_transformed))      
+raster_clipped <- mask(raster_clipped, vect(Cali_tracts2_transformed)) 
+
+target_crs <- "EPSG:5070"
+raster_projected <- project(raster_clipped, target_crs)  
+
+raster_df <- as.data.frame(raster_projected, xy = TRUE)
+
+ggplot() +
+  with_shadow(
+    geom_sf(data = Cali_tracts, fill = "transparent", lwd = 1, color = "#332227"),
+    colour = "#c3cda4",        
+    x_offset = -5,            
+    y_offset = -4,            
+    sigma = 7,              
+    alpha = .1              
+  ) +
+  with_shadow(
+    geom_sf(data = Cali_tracts, fill = "transparent", lwd = 1, color = "#332227"),
+    colour = "black",       
+    x_offset = 5,            
+    y_offset = 4,           
+    sigma = 5,               
+    alpha = 1             
+  ) +
+geom_raster(data = raster_df, aes(x = x, y = y, fill = SR_50M), alpha = 1) +
+  scale_fill_gradient(
+    low = "#332227",   
+    high = "#4a3a43",  
+    na.value = "transparent", 
+    name = "Elevation"
+  ) +
+#geom_sf(data = Cali_tracts, color = "#332227", fill = "transparent", lwd = 3) +
+  geom_sf(data = parks_geo_transformed, color = "#595744", size = 3, alpha = 0.5) +
+  geom_sf(data = parks_geo_transformed, color = "#b9e193", size = 2) +
+  labs(
+    title = "Park Locations",
+    subtitle = "- California -"
+  ) +
+  theme_void() +
+  theme(
+    plot.background = element_rect(fill = "#332227", color = NA), 
+    panel.background = element_rect(fill = "#332227", color = NA),
+    plot.title = element_text(size = 34, hjust = 0.92, vjust = -43.5, color = "#b9e193", family = "Eina02-Bold"), 
+    plot.subtitle = element_text(size = 15, hjust = 0.79, vjust = -101, color = "#8da46d", family = "Eina02-RegularItalic"),
+    legend.position = "none",
+    plot.margin = margin(t = -70, r = 0, b = 0, l = 0) 
+  )
+
+```

@@ -1,0 +1,152 @@
+---
+title: "Witanowski - Day 25, Heat"
+output: html_notebook
+---
+
+```{r}
+
+###################### Libraries 
+
+library(sf)
+library(tigris)
+library(tidycensus)
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+library(ggtext)
+library(glue)
+library(magick)
+library(ggpubr)
+library(terra)
+library(ggplot2)
+library(ggspatial)
+library(ggshadow)
+library(grid)
+library(extrafont)
+library(ggimage)
+library(patchwork)
+library(ggfx)
+
+```
+
+
+```{r echo=TRUE, fig.height=10, fig.width=13, message=FALSE, warning=FALSE, cache=FALSE}
+
+######################
+
+setwd("/Users/x/Downloads")
+
+tidycensus::census_api_key("[enter key]", overwrite = TRUE)
+
+######################
+
+us <- get_acs(
+  geography = "state", 
+  year = 2022,
+  variables = "B01003_001E",
+  geometry = TRUE,
+  progress = FALSE
+)
+
+us <- st_transform(us, crs = 'EPSG:5070')
+cont_us <- us %>% filter(NAME != 'Alaska' & NAME != 'Hawaii' & NAME != 'Puerto Rico')
+
+us_boundary <- st_read("gz_2010_us_outline_20m.json")
+us_boundary <- st_transform(us_boundary, crs = 'EPSG:5070')
+us_boundary <- us_boundary %>% filter(R_STATEFP != '02' & R_STATEFP != '15' & R_STATEFP != '72')
+
+rcp85 <- rast("macav2metdata_hi100_20702099_rcp85_CMIP5ModelMean.tif")
+rcp45 <- rast("macav2metdata_hi100_20702099_rcp45_CMIP5ModelMean.tif")
+
+target_crs <- "EPSG:5070"
+rcp45_projected <- project(rcp45, target_crs) 
+rcp85_projected <- project(rcp85, target_crs) 
+
+#plot(rcp85_projected)
+#plot(rcp45_projected)
+
+rcp85_df <- as.data.frame(rcp85_projected, xy = TRUE)
+rcp45_df <- as.data.frame(rcp45_projected, xy = TRUE)
+
+## PLOT
+
+colored_text <- glue('<span style="color:#2a2326;">Ranging from</span> <span style="color:#aca494;">10</span> <span style="color:#2a2326;">to</span> <span style="color:#4d0a18;">100</span> <span style="color:#2a2326;">Days</span>')
+colored_text2 <- glue('<span style="color:#FF5733;">Projected Climate Data</span>: <span style="color:#33B5FF;">RCP 4.5 vs RCP 8.5</span>')
+
+
+
+p1 <- ggplot() +
+  with_shadow(
+    geom_sf(data = us_boundary, fill = "transparent", col = alpha("#341515", 0.4), lwd = 1),
+    colour = "black", x_offset = 3, y_offset = 3, sigma = 4, alpha = 1
+  ) +
+  with_shadow(
+    geom_sf(data = us_boundary, fill = "transparent", col = alpha("#341515", 0.3), lwd = 0.15),
+    colour = "white",       
+    x_offset = -3,           
+    y_offset = -3,           
+    sigma = 4,              
+    alpha = 1              
+  ) +
+  geom_sf(data = cont_us, fill = "transparent", col = alpha("#341515", 0.3), lwd = 0.15) +
+  geom_raster(data = rcp45_df, aes(x = x, y = y, fill = macav2metdata_hi100_20702099_rcp45_CMIP5ModelMean), alpha = 0.9) +
+  scale_fill_gradient(
+    low = "#aca494",   
+    high = "#4d0a18",  
+    na.value = "transparent"
+  ) +
+  labs(title = "RCP 4.5") +
+  theme_void() +
+  theme(legend.position = "none",
+        panel.background = element_rect(fill = "#e8e3e1", color = NA),
+        plot.title.position = "plot",
+        plot.title = element_text(vjust = -72, hjust = 0.15, family = "Eina02-Semibold", size = 15, color = "#341515")) +
+  coord_sf() 
+
+p2 <- ggplot() +
+  with_shadow(
+    geom_sf(data = us_boundary, fill = "transparent", col = alpha("#341515", 0.4), lwd = 1),
+    colour = "black", x_offset = 3, y_offset = 3, sigma = 4, alpha = 1
+  ) +
+  with_shadow(
+    geom_sf(data = us_boundary, fill = "transparent", col = alpha("#341515", 0.3), lwd = 0.15),
+    colour = "white",        
+    x_offset = -3,           
+    y_offset = -3,        
+    sigma = 4,           
+    alpha = 1             
+  ) +
+  geom_sf(data = cont_us, fill = "transparent", col = alpha("#341515", 0.3), lwd = 0.1) +
+  geom_raster(data = rcp85_df, aes(x = x, y = y, fill = macav2metdata_hi100_20702099_rcp85_CMIP5ModelMean), alpha = 0.9) +
+  scale_fill_gradient(
+    low = "#aca494",   
+    high = "#4d0a18",  
+    na.value = "transparent"
+  ) +
+  labs(title = "RCP 8.5") +
+  theme_void() +
+  theme(legend.position = "none",
+        panel.background = element_rect(fill = "#e8e3e1", color = NA),
+        plot.title.position = "plot",
+        plot.title = element_text(vjust = -72, hjust = 0.15, family = "Eina02-Semibold", size = 15, color = "#341515")) +
+  coord_sf()
+
+combined_plot <- p1 + p2 + 
+  plot_annotation(
+    title = "Projected Heat Vulnerability",
+    subtitle = "Days with Heat Index ≥ 100 °F (2077-2099 Mean)",
+    caption = colored_text,
+    theme = theme(
+      plot.background = element_rect(fill = "#e8e3e1", color = NA),  
+      plot.title = element_text(size = 37, family = "Eina02-Bold", hjust = 0.5, color = "#341515"),
+      plot.subtitle = element_text(size = 14, family = "Arial", hjust = 0.5, color = "#2a2326"),
+      plot.caption = element_markdown(size = 10, family = "Eina02-RegularItalic", hjust = 0.5, vjust = 100),
+      plot.margin = margin(t = 20, r = 10, b = 12, l = 10)         
+    )
+  )
+
+
+combined_plot
+
+```
+

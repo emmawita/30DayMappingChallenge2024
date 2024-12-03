@@ -1,0 +1,197 @@
+---
+title: "Witanowski - Day 06, Raster"
+output: html_notebook
+---
+
+### For this map...
+
+```{r include=FALSE}
+
+###################### Libraries 
+
+library(sf)
+library(tigris)
+library(tidycensus)
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+library(ggtext)
+library(glue)
+library(magick)
+library(ggpubr)
+library(terra)
+library(ggplot2)
+library(ggspatial)
+library(ggshadow)
+library(grid)
+library(extrafont)
+library(ggimage)
+library(patchwork)
+library(ggfx)
+library(data.table)
+library(tidyterra)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(devtools)
+library(ggmap)
+library(ggspatial)
+library(raster)
+
+
+```
+
+```{r echo=TRUE, fig.height=10, fig.width=13, message=FALSE, warning=FALSE, cache=FALSE}
+
+######################
+
+setwd("/Users/emmawit/Downloads")
+
+tidycensus::census_api_key("2303009ddac130ce0b80796be79521a5421131c9", overwrite = TRUE)
+
+######################
+
+alaska_map <- ne_states(country = "United States of America", returnclass = "sf") %>%
+  filter(name == "Alaska")
+
+######################
+
+cover2011 <- rast("nlcd_tcc_SEAK_2011_v2021-4/nlcd_tcc_seak_2011_v2021-4.tif")
+cover2021 <- rast("nlcd_tcc_SEAK_2021_v2021-4/nlcd_tcc_seak_2021_v2021-4.tif")
+
+target_crs <- "EPSG:26951"
+cover2011_projected <- project(cover2011, target_crs) 
+cover2021_projected <- project(cover2021, target_crs) 
+
+cover2011_projected[cover2011_projected == 254] <- NA
+cover2021_projected[cover2021_projected == 254] <- NA
+
+cover2011_downsampled <- aggregate(cover2011_projected, fact = 5, fun = mean) # Adjust 'fact' as needed
+cover2021_downsampled <- aggregate(cover2021_projected, fact = 5, fun = mean)
+
+cover2011_df <- as.data.frame(cover2011_downsampled, xy = TRUE)
+cover2021_df <- as.data.frame(cover2021_downsampled, xy = TRUE)
+
+cover_change <- cover2021_projected - cover2011_projected
+
+
+cover_change_downsampled <- aggregate(cover_change, fact = 6, fun = mean)
+crs(cover_change_downsampled) <- CRS("+init=epsg:26951")
+
+
+
+cover_change_df <- as.data.frame(cover_change_downsampled, xy = TRUE)
+
+
+anchorage_bbox <- st_bbox(c(xmin = -149.9, xmax = -148.5, ymin = 61.1, ymax = 61.5), 
+                          crs = st_crs(4326))
+
+
+anchorage_bbox_26951 <- st_transform(st_as_sfc(anchorage_bbox), crs = st_crs(26951))
+
+bbox_extent <- as(extent(st_bbox(anchorage_bbox_26951)), "SpatialPolygons")
+crs(bbox_extent) <- CRS(st_crs(26951)$proj4string)  
+
+
+cover_change_cropped <- crop(cover_change, bbox_extent)
+
+cover_change_cropped_df <- as.data.frame(cover_change_cropped, xy = TRUE)
+
+
+circle1 <- data.frame(
+  x = -150.52430737087414,  
+  y = 60.39083661852736,  
+  image = "circle.png"  
+)
+
+circle1_sf <- st_as_sf(circle1, coords = c("x", "y"), crs = 4326)  
+
+circle1_transformed <- st_transform(circle1_sf, crs = 26951)
+
+circle_transformed_coords <- as.data.frame(st_coordinates(circle1_transformed))
+circle1_sf$x <- circle_transformed_coords$X
+circle1_sf$y <- circle_transformed_coords$Y
+
+us_boundary <- st_read("gz_2010_us_outline_20m.json")
+us_boundary <- st_transform(us_boundary, crs = 'EPSG:26951')
+us_boundary <- us_boundary %>% filter(R_STATEFP %in% '02')
+
+cover_change_sf <- st_as_sf(cover_change_df, coords = c("x", "y"), crs = 26951)
+bbox <- st_bbox(cover_change_sf)
+
+bbox <- data.frame(
+  xmin = min(cover_change_df$x, na.rm = TRUE),
+  xmax = max(cover_change_df$x, na.rm = TRUE),
+  ymin = min(cover_change_df$y, na.rm = TRUE),
+  ymax = max(cover_change_df$y, na.rm = TRUE)
+)
+
+
+
+center_lat <- 60.681369
+center_lon <- -150.514293
+
+center_point <- data.frame(lon = center_lon, lat = center_lat)
+
+center_sf <- st_as_sf(center_point, coords = c("lon", "lat"), crs = 4326)
+
+center_sf_utm <- st_transform(center_sf, crs = 26951)
+
+offset <- 100000  
+
+bbox_utm <- st_bbox(st_buffer(center_sf_utm, dist = offset))
+
+
+
+
+
+ggplot() +
+  geom_sf(data = us_boundary, color = "white", fill ="green") +
+  geom_raster(
+    data = cover_change_df,
+    aes(x = x, y = y, fill = NLCD_Percent_Tree_Canopy_Cover),
+    alpha = 1
+  ) +
+  scale_fill_gradient2(
+    low = "#150b0e",
+    mid = "grey",
+    high = "#63d3b9",
+    midpoint = 0,
+    na.value = "transparent"
+  ) +
+  geom_sf(data = us_boundary, color = "white", fill ="green") +
+  geom_image(
+    data = circle1_sf,
+    aes(x = x, y = y, image = image),
+    size = .9
+  ) +
+  coord_sf(
+    xlim = c(bbox_utm["xmin"], bbox_utm["xmax"]),
+    ylim = c(bbox_utm["ymin"], bbox_utm["ymax"]),
+    expand = FALSE
+  ) +
+  labs(
+    title = "Change in Tree Canopy Cover",
+    fill = "Change (%)",
+    subtitle = "Soldotna, Southwest Alaska (2011 - 2021)",
+    caption = "           Tree canopy loss in Alaska, particularly in Soldotna, is primarily driven by climate change, wildfires, and pest infestations. \n                Rising temperatures are increasing the frequency and intensity of wildfires, which destroy vast areas of forest. Additionally, warmer \n       winters allow pests like spruce beetles to thrive, further damaging trees. The changing climate also affects tree health by altering precipitation \n patterns and soil moisture. Human activities such as development and logging contribute to deforestation, exacerbating the loss of tree cover in some   \n regions. These combined factors are significantly impacting Alaska’s forest ecosystems, with particular focus on more vulnerable areas like Soldotna."
+  ) +
+  theme_void() +
+  theme(
+    plot.title = element_text(size = 45, face = "bold", hjust = 0.2, vjust = -21, family = "Eina02-Bold", color = "#334540"),
+    plot.subtitle = element_text(family = "Eina02-Light", face = "italic", vjust = -93, hjust = 0.36, color = "#334540"),
+    plot.caption = element_text(family = "Eina02-Light", vjust = 50, size = 6, hjust = 0.03, color = "#334540"),
+    legend.position = c(0.85, 0.06), 
+    legend.title.position = "top",
+    legend.direction = "horizontal",
+    legend.box = "horizontal",
+    plot.background = element_rect(fill = "grey", color = NA),
+    panel.background = element_rect(fill = "transparent", color = NA),
+    legend.key.height = unit(0.4, "cm"),
+    legend.key.width = unit(1.2, "cm"),
+    legend.title = element_text(family = "Eina02-RegularItalic", size = 7, hjust = 0.5, color = "#334540"),  
+    legend.text = element_text(family = "Eina02-Light", size = 7, color = "#334540"), 
+    plot.margin = margin(t = -150, r = 0, b = -50, l = 0)  
+  ) 
+  
+```
+

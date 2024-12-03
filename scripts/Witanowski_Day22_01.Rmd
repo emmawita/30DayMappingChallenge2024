@@ -1,0 +1,136 @@
+---
+title: "Witanowski - Day 22, 2 Colors"
+output: html_notebook
+---
+
+```{r}
+
+###################### Libraries 
+
+library(sf)
+library(tigris)
+library(tidycensus)
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+library(ggtext)
+library(glue)
+library(magick)
+library(ggpubr)
+library(terra)
+library(ggplot2)
+library(ggspatial)
+library(ggshadow)
+library(grid)
+library(extrafont)
+library(ggimage)
+library(patchwork)
+library(ggfx)
+library(elevatr)
+library(raster)
+
+```
+
+```{r fig.height=13, fig.width=10}
+
+######################
+
+setwd("/Users/x/Downloads")
+
+tidycensus::census_api_key("[enter key]", overwrite = TRUE)
+
+######################
+
+berlin_roads <- st_read("berlin 2/berlin.shp")
+
+circle_boundary <- st_read("berlin 2/circle.shp")
+
+plot(berlin_roads)
+
+berlin_roads_2d <- st_zm(berlin_roads, drop = TRUE, what = "ZM")
+circle_boundary_2d <- st_zm(circle_boundary, drop = TRUE, what = "ZM")
+
+berlin_roads_transformed <- st_transform(berlin_roads_2d, crs = 32633)
+circle_boundary_transformed <- st_transform(circle_boundary_2d, crs = 32633)
+
+
+plot(berlin_roads_transformed)
+
+ggplot() +
+  geom_sf(data = berlin_roads_transformed, 
+          aes(linewidth = strassenkl), color = "#daf8c0") +
+  scale_linewidth_manual(
+    values = c(
+      "I" = 3,
+      "II" = 2.4,
+      "III" = 1.8,
+      "IV" = 1.2,
+      "V" = 0.6
+    ))+
+  with_shadow(
+    geom_sf(data = circle_boundary_transformed, fill = "transparent", lwd = 2, color = "#0e0d0b"),
+    colour = "#0e0d0b",        # Shadow color to simulate glow
+    x_offset = 0,            # No offset, centered glow
+    y_offset = 0,            # No offset, centered glow
+    sigma = 8,               # Soft blur for the glow
+    alpha = 1              # Semi-transparent glow effect
+  ) +
+  with_shadow(
+    geom_sf(data = circle_boundary_transformed, fill = "transparent", lwd = 2, color = "#0e0d0b"),
+    colour = "#0e0d0b",        # Shadow color to simulate glow
+    x_offset = 0,            # No offset, centered glow
+    y_offset = 0,            # No offset, centered glow
+    sigma = 8,               # Soft blur for the glow
+    alpha = 1              # Semi-transparent glow effect
+  ) +
+  with_shadow(
+    geom_sf(data = circle_boundary_transformed, fill = "transparent", lwd = 2, color = "#0e0d0b"),
+    colour = "#0e0d0b",        # Shadow color to simulate glow
+    x_offset = 0,            # No offset, centered glow
+    y_offset = 0,            # No offset, centered glow
+    sigma = 8,               # Soft blur for the glow
+    alpha = 1              # Semi-transparent glow effect
+  ) +
+  with_shadow(
+    geom_sf(data = circle_boundary_transformed, fill = "transparent", lwd = 2, color = "#0e0d0b"),
+    colour = "#0e0d0b",        # Shadow color to simulate glow
+    x_offset = 0,            # No offset, centered glow
+    y_offset = 0,            # No offset, centered glow
+    sigma = 8,               # Soft blur for the glow
+    alpha = 1              # Semi-transparent glow effect
+  ) +
+  with_shadow(
+    geom_sf(data = circle_boundary_transformed, fill = "transparent", lwd = 2, color = "#0e0d0b"),
+    colour = "#0e0d0b",        # Shadow color to simulate glow
+    x_offset = 0,            # No offset, centered glow
+    y_offset = 0,            # No offset, centered glow
+    sigma = 8,               # Soft blur for the glow
+    alpha = 1              # Semi-transparent glow effect
+  ) +
+  with_shadow(
+    geom_sf(data = circle_boundary_transformed, fill = "transparent", lwd = 2, color = "#0e0d0b"),
+    colour = "#0e0d0b",        # Shadow color to simulate glow
+    x_offset = 0,            # No offset, centered glow
+    y_offset = 0,            # No offset, centered glow
+    sigma = 8,               # Soft blur for the glow
+    alpha = 1              # Semi-transparent glow effect
+  ) +
+  labs(title = "BERLIN",
+       subtitle = "- G E R M A N Y -",
+       caption = "52.52° N    13.405° E") +
+theme_void() +
+ theme(
+    legend.position = "none",
+    plot.background = element_rect(fill = "#0e0d0b", color = NA),  # Background color for the entire plot
+    panel.background = element_rect(fill = NA, color = NA),          # Transparent map area
+    plot.margin = margin(t = 10, r = 0, b = 190, l = 0),                # Increase top and bottom margin
+    plot.title.position = "plot",                                 # Place title in the plot area
+    plot.title = element_text(hjust = 0.5, size = 84, vjust = -77, face = "bold", color = "#daf8c0", family = "Impact"),
+    plot.subtitle.position = "plot",  
+    plot.caption.position = "plot",  
+    plot.caption = element_text(face = "italic", color = "#daf8c0", hjust = 0.5, vjust = -51, family = "Avenir Next Condensed"),
+    plot.subtitle = element_text(face = "bold", color = "#daf8c0", hjust = 0.5, vjust = -216, family = "Avenir Next Condensed", size = 14)
+  )
+
+```
+

@@ -1,0 +1,174 @@
+---
+title: "Witanowski - Day 11, Arctic"
+output: html_document
+date: "2024-11-29"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+###################### Libraries 
+
+library(sf)
+library(tigris)
+library(tidycensus)
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+library(ggtext)
+library(glue)
+library(magick)
+library(ggpubr)
+library(terra)
+library(ggplot2)
+library(ggspatial)
+library(ggshadow)
+library(grid)
+library(extrafont)
+library(ggimage)
+library(patchwork)
+library(ggfx)
+library(data.table)
+library(tidyterra)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(devtools)
+library(ggmap)
+library(ggspatial)
+library(leaflet)
+
+
+```
+
+```{r fig.height=10, fig.width=13}
+
+######################
+
+setwd("/Users/emmawit/Downloads")
+
+tidycensus::census_api_key("2303009ddac130ce0b80796be79521a5421131c9", overwrite = TRUE)
+
+######################
+
+all_countries <- st_read("World_Countries_(Generalized)_9029012925078512962.geojson")
+all_countries <- st_transform(all_countries, crs = 'EPSG:3413')
+
+ice2014 <- st_read("nic_autoc2014244n_pl_a/nic_autoc2014244n_pl_a.shp")
+
+ice2024 <- st_read("nic_autoc2024245n_pl_a/nic_autoc2024245n_pl_a.shp")
+
+ice2024 <- st_as_sf(ice2024)
+ice2014 <- st_as_sf(ice2014)
+
+
+
+extent_bbox_extended_north_hemisphere <- st_bbox(c(
+  xmin = -130,  
+  xmax = 10,   
+  ymin = 20,    
+  ymax = 90   
+), crs = st_crs(4326)) %>%
+  st_as_sfc()
+
+# Ensure ice2024 is in WGS 84 CRS
+ice2024 <- st_transform(ice2024, crs = st_crs(4326))
+ice2014 <- st_transform(ice2014, crs = st_crs(4326))
+sf_use_s2(FALSE)
+ice2024_valid <- st_make_valid(ice2024)
+
+sf_use_s2(FALSE)
+ice2014_valid <- st_make_valid(ice2014)
+
+# Clip ice2024 to the bounding box
+ice2024_clipped <- st_intersection(ice2024, extent_bbox_extended_north_hemisphere)
+ice2014_clipped <- st_intersection(ice2014, extent_bbox_extended_north_hemisphere)
+
+#all_countries_clipped <- st_intersection(all_countries, extent_bbox_extended_north_hemisphere)
+
+###################### Hillshade
+
+#Hillshade
+raster_data1 <- rast("SR_50M.tif")
+raster_crs <- crs(raster_data1, proj = TRUE) 
+
+extent_bbox_extended_north_hemisphere_spat <- terra::ext(st_bbox(extent_bbox_extended_north_hemisphere))
+
+raster_clipped <- terra::crop(raster_data1, extent_bbox_extended_north_hemisphere_spat)
+
+target_crs <- "EPSG:4326"
+raster_projected <- project(raster_clipped, target_crs)    
+
+raster_df1 <- as.data.frame(raster_projected, xy = TRUE)
+
+ice2024_clipped <- st_transform(ice2024, crs = st_crs(4326))
+
+ice2024_bbox <- st_bbox(ice2024_clipped)
+
+ice2024_extent <- terra::ext(ice2024_bbox)
+
+raster_clipped_to_ice2024 <- terra::crop(raster_projected, ice2024_extent)
+
+raster_df_clipped2024 <- as.data.frame(raster_clipped_to_ice2024, xy = TRUE)
+
+greenland_bbox <- st_bbox(c(
+  xmin = -75,  
+  xmax = -10, 
+  ymin = 60,  
+  ymax = 85   
+), crs = st_crs(4326)) %>%
+  st_as_sfc()
+
+raster_extent2024 <- ext(raster_clipped_to_ice2024)
+
+
+leaflet() %>%
+  addProviderTiles("Esri.WorldImagery") %>%
+  addPolygons(data = ice2014_clipped, 
+              fillColor = "#645873", 
+              color = "#645873", 
+              weight = 1, 
+              opacity = 0.7, 
+              fillOpacity = 0.9, 
+              group = "Ice Extent 2014") %>%
+  addPolygons(data = ice2024_clipped, 
+              fillColor = "#eae4f5", 
+              color = "#eae4f5", 
+              weight = 1, 
+              opacity = 0.7, 
+              fillOpacity = 0.3, 
+              group = "Ice Extent 2024") %>%
+  addLayersControl(
+    overlayGroups = c("Ice Extent 2014", "Ice Extent 2024"),
+    options = layersControlOptions(collapsed = FALSE),
+    position = "bottomright"
+  ) %>%
+  addControl("<h2>Arctic Ice Extent, 2014 - 2024</h2>", position = "topright", className = "map-title") %>%
+  htmlwidgets::onRender("
+    function(el, x) {
+      var title = el.querySelector('.map-title');
+      if (title) {
+        title.style.fontFamily = 'Roboto, sans-serif'; 
+        title.style.fontSize = '32px';  
+        title.style.fontWeight = 'bold';  
+        title.style.color = '#eae4f5'; 
+      }
+      
+      // Add colored boxes next to layer titles in the control
+      var control = document.querySelector('.leaflet-control-layers');
+      if (control) {
+        var items = control.querySelectorAll('.leaflet-control-layers-overlays label');
+        
+        // Add a color box next to each title
+        items[0].innerHTML = '<span style=\"background-color:#645873; width: 20px; height: 10px; display: inline-block; margin-right: 5px; vertical-align: middle;\"></span>' + items[0].innerHTML;
+        items[1].innerHTML = '<span style=\"background-color:#eae4f5; width: 20px; height: 10px; display: inline-block; margin-right: 5px; vertical-align: middle;\"></span>' + items[1].innerHTML;
+        
+        // Change opacity of the legend box
+        control.style.opacity = 0.7;  // Set desired opacity for the entire legend box
+      }
+    }
+  ")
+
+```

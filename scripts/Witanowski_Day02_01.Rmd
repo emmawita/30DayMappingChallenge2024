@@ -1,0 +1,283 @@
+---
+title: "Witanowski - Day 2, Lines"
+output: html_notebook
+---
+
+```{r}
+
+###################### Libraries 
+
+library(sf)
+library(tigris)
+library(tidycensus)
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+library(ggtext)
+library(glue)
+library(magick)
+library(ggpubr)
+library(terra)
+library(ggplot2)
+library(ggspatial)
+library(ggshadow)
+library(grid)
+library(extrafont)
+library(ggimage)
+library(patchwork)
+library(ggfx)
+library(elevatr)
+library(raster)
+
+```
+
+```{r fig.height=13, fig.width=10}
+
+######################
+
+setwd("/Users/x/Downloads")
+
+tidycensus::census_api_key("[enter key]", overwrite = TRUE)
+
+###################### Getting Data
+
+snake <- st_read("USA_Rivers_and_Streams-shp/9ae73184-d43c-4ab8-940a-c8687f61952f2020328-1-r9gw71.0odx9.shp")
+
+snake_filtered <- snake %>%
+  filter(Name %in% "Snake River")
+
+Idaho_Tracts <- get_acs(
+  geography = "state",
+  variables = "B01003_001",
+  state = "ID",
+  year = 2019,
+  output = "wide",
+  geometry = TRUE
+) %>%
+  sf::st_transform(crs = 26911)
+
+WA_Tracts <- get_acs(
+  geography = "state",
+  variables = "B01003_001",
+  state = "WA",
+  year = 2019,
+  output = "wide",
+  geometry = TRUE
+) %>%
+  sf::st_transform(crs = 26911)
+
+MT_Tracts <- get_acs(
+  geography = "state",
+  variables = "B01003_001",
+  state = "MT",
+  year = 2019,
+  output = "wide",
+  geometry = TRUE
+) %>%
+  sf::st_transform(crs = 26911)
+
+WY_Tracts <- get_acs(
+  geography = "state",
+  variables = "B01003_001",
+  state = "WY",
+  year = 2019,
+  output = "wide",
+  geometry = TRUE
+) %>%
+  sf::st_transform(crs = 26911)
+
+OR_Tracts <- get_acs(
+  geography = "state",
+  variables = "B01003_001",
+  state = "OR",
+  year = 2019,
+  output = "wide",
+  geometry = TRUE
+) %>%
+  sf::st_transform(crs = 26911)
+
+NV_Tracts <- get_acs(
+  geography = "state",
+  variables = "B01003_001",
+  state = "NV",
+  year = 2019,
+  output = "wide",
+  geometry = TRUE
+) %>%
+  sf::st_transform(crs = 26911)
+
+UT_Tracts <- get_acs(
+  geography = "state",
+  variables = "B01003_001",
+  state = "UT",
+  year = 2019,
+  output = "wide",
+  geometry = TRUE
+) %>%
+  sf::st_transform(crs = 26911)
+
+snake_filtered <- st_transform(snake_filtered, crs = 26911)
+
+snake_filtered_clipped <- st_intersection(snake_filtered, Idaho_Tracts)
+
+plot(snake_filtered_clipped)
+
+dem <- get_elev_raster(
+    locations = Idaho_Tracts, 
+    z = 10,
+    clip = "locations")
+
+
+dem_projected <- projectRaster(dem, crs = 26911)
+
+dem_projected_downsampled <- aggregate(dem_projected, fact = 10, fun = mean)  
+
+dem_projected_df <- as.data.frame(dem_projected_downsampled, xy = TRUE)
+
+dem_extent <- st_bbox(dem_projected_downsampled)
+
+dem_projected_df <- dem_projected_df %>%
+  mutate(file88b0549ba5e3 = ifelse(is.na(file88b0549ba5e3), NA, file88b0549ba5e3))
+
+#dem_clipped_df <- as.data.frame(dem_clipped, xy = TRUE, na.rm = TRUE)
+
+dem_clipped <- mask(dem_projected, Idaho_Tracts)
+
+dem_clipped_downsampled <- aggregate(dem_clipped, fact = 10, fun = mean)
+
+dem_clipped_df <- as.data.frame(dem_clipped_downsampled, xy = TRUE)
+
+dem_clipped_df <- dem_clipped_df %>%
+  mutate(file88b0549ba5e3 = ifelse(is.na(file88b0549ba5e3), NA, file88b0549ba5e3))
+
+###################### Hillshade
+
+us2 <- get_acs(
+  geography = "state", 
+  year = 2022,
+  variables = "B01003_001E",
+  geometry = TRUE,
+  progress = FALSE
+)
+
+cont_us2 <- us2 %>% filter(NAME != 'Alaska' & NAME != 'Hawaii' & NAME != 'Puerto Rico')
+
+#Hillshade
+raster_data <- rast("SR_50M.tif")
+raster_crs <- crs(raster_data, proj = TRUE) 
+us2_transformed <- st_transform(cont_us2, crs = raster_crs)
+
+raster_clipped <- crop(raster_data, ext(us2_transformed))      
+raster_clipped <- mask(raster_clipped, vect(us2_transformed)) 
+
+target_crs <- "EPSG:26911"
+raster_projected <- project(raster_clipped, target_crs)    
+
+raster_df <- as.data.frame(raster_projected, xy = TRUE)
+
+###################### Test
+
+#Annotation
+annotation_df1 <- data.frame(
+  label = "Test",   
+  x = -113.57301131304098,                
+  y = 46.16177064384005,                 
+  family = "Apple Chancery"     
+)
+annotation_sf1 <- st_as_sf(annotation_df1, coords = c("x", "y"), crs = 4326)  
+
+annotation1_transformed <- st_transform(annotation_sf1, crs = 26911)
+
+annotation1_transformed_coords <- as.data.frame(st_coordinates(annotation1_transformed))
+annotation_df1$x <- annotation1_transformed_coords$X
+annotation_df1$y <- annotation1_transformed_coords$Y
+
+
+###################### Plotting
+
+ggplot() +
+  geom_raster(data = dem_clipped_df, aes(x = x, y = y, fill = file88b0549ba5e3), alpha = 1) +
+  scale_fill_gradient(low = "#31272c", high = "#646067") + 
+  geom_sf(data = WA_Tracts, fill = "#31272c", color = "#31272c") +
+  geom_sf(data = MT_Tracts, fill = "#31272c", color = "#31272c") +
+  geom_sf(data = WY_Tracts, fill = "#31272c", color = "#31272c") +
+  geom_sf(data = OR_Tracts, fill = "#31272c", color = "#31272c") +
+  geom_sf(data = NV_Tracts, fill = "#31272c", color = "#31272c") +
+  geom_sf(data = UT_Tracts, fill = "#31272c", color = "#31272c") +
+  geom_raster(data = raster_df, aes(x = x, y = y, fill = SR_50M), alpha = 0.5) +
+  scale_fill_gradient(
+    low = "#31272c",   
+    high = "#646067",  
+    na.value = "transparent", 
+    name = "Elevation"
+  ) +
+  with_shadow(
+    geom_sf(data = Idaho_Tracts, fill = "transparent", color = "#31272c", lwd = 0.15),
+    colour = "#241d21",        
+    x_offset = 4,           
+    y_offset = 4,           
+    sigma = 4,            
+    alpha = 1              
+  ) +
+  with_shadow(
+    geom_sf(data = Idaho_Tracts, fill = "transparent", color = "#31272c", lwd = 0.15),
+    colour = "#241d21",      
+    x_offset = -4,          
+    y_offset = -4,           
+    sigma = 4,               
+    alpha = 1              
+  ) +
+  with_shadow(
+    geom_sf(data = Idaho_Tracts, fill = "transparent",  color = "#31272c",  lwd = 0.15),
+    colour = "white",       
+    x_offset = -3,           
+    y_offset = -3,          
+    sigma = 4,               
+    alpha = 1              
+  ) +
+  with_shadow(
+    geom_sf(data = Idaho_Tracts, fill = "transparent", color = "#31272c", lwd = 0.15),
+    colour = "#a8b0b7",       
+    x_offset = 9,           
+    y_offset = 9,          
+    sigma = 7,              
+    alpha = 1              
+  ) +
+  with_shadow(
+    geom_sf(data = snake_filtered, fill = "#ddeef5", lwd = 4),
+    colour = "white",        
+    x_offset = 0,           
+    y_offset = 0,           
+    sigma = 5,              
+    alpha = .2              
+  ) +
+  geom_sf(data = snake_filtered, color = "#a8b0b7", lwd = 4) +
+  geom_sf(data = snake_filtered, color = "#ddeef5", lwd = 1) +
+  geom_text(
+    data = annotation_df1,      
+    aes(x = x, y = y, label = label, family = family),
+    hjust = 0.5,                
+    vjust = 0.5,
+    color = "#3a2317",
+    size = 2,
+    alpha = 0.9,
+    fontface = "bold" 
+  ) +
+  labs(title = "S n a k e  R i v e r", 
+       subtitle = "- Idaho, United States -",
+       caption = "The Snake River faces significant challenges including declining salmon populations                \ndue to dam obstruction and habitat degradation, agricultural runoff impacting water quality, and       \nconflicts over water rights. Climate change, invasive species, and altered water flow further complicate efforts \nto restore the river’s ecosystem and balance its use for agriculture, urban development, and conservation.  ") +
+  theme_void() +
+  theme(legend.position = "none",
+        plot.background = element_rect(fill = "#31272c", color = NA),   # Background color for the entire plot
+        panel.background = element_rect(fill = "transparent", color = NA), # Transparent background for the map area
+        plot.margin = margin(t = .2, r = 0, b = .3, l = 0),
+        plot.title.position = "plot", 
+        plot.caption.position = "plot", 
+        plot.title = element_text(hjust = 0.77, size = 45, vjust = -15, color = "#ddeef5", family = "Canela"),
+        plot.subtitle = element_text(hjust = 0.64, size = 11, vjust = -62, color = "#ddeef5", family = "Avenir Next Condensed"),
+        plot.caption = element_text(hjust = 0.75, size = 8, vjust = 343, color = "#d0d1d9", family = "Avenir Next Condensed")) +
+  coord_sf(xlim = c(dem_extent$xmin, dem_extent$xmax), 
+           ylim = c(dem_extent$ymin, dem_extent$ymax), 
+           crs = st_crs(26911)) 
+
+```

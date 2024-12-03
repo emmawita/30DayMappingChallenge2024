@@ -1,0 +1,175 @@
+---
+title: "Witanowski - Day 17, Choropleth"
+output: html_notebook
+---
+
+```{r include=FALSE}
+
+###################### Libraries 
+
+library(sf)
+library(tigris)
+library(tidycensus)
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+library(ggtext)
+library(glue)
+library(magick)
+library(ggpubr)
+library(terra)
+library(ggplot2)
+library(ggspatial)
+library(ggshadow)
+library(grid)
+library(extrafont)
+library(ggimage)
+library(patchwork)
+library(ggfx)
+library(elevatr)
+library(raster)
+
+```
+
+```{r echo=TRUE, fig.height=10, fig.width=13, message=FALSE, warning=FALSE, cache=FALSE}
+
+######################
+
+setwd("/Users/x/Downloads")
+
+tidycensus::census_api_key("[enter key]", overwrite = TRUE)
+
+######################
+
+hurricanes <- st_read("hurricane/hurricane.shp")
+hurricanes <- hurricanes %>% filter(STATEFP != '02' & STATEFP != '15' & STATEFP != '72')
+
+us <- get_acs(
+  geography = "state", 
+  year = 2022,
+  variables = "B01003_001E",
+  geometry = TRUE,
+  progress = FALSE
+)
+
+us <- st_transform(us, crs = 'EPSG:5070')
+cont_us <- us %>% filter(NAME != 'Alaska' & NAME != 'Hawaii' & NAME != 'Puerto Rico')
+
+east_coast_bbox <- st_bbox(c(
+  xmin = -850000,  # Adjust as needed
+  ymin = 200000,
+  xmax = 2500000,
+  ymax = 3300000
+), crs = st_crs('EPSG:5070'))
+
+# Convert bbox to sf object
+east_coast_bbox_sf <- st_as_sfc(east_coast_bbox)
+
+east_coast_bbox_sf <- st_transform(east_coast_bbox_sf, st_crs(hurricanes))
+
+hurricanes_east_coast <- st_crop(hurricanes, east_coast_bbox_sf)
+
+cont_us <- st_transform(cont_us, st_crs(hurricanes_east_coast))
+cont_us <- st_crop(cont_us, east_coast_bbox_sf)
+
+us2 <- cont_us
+
+east_coast_bbox_sf2 <- east_coast_bbox_sf
+
+###################### Hillshade
+
+us2 <- get_acs(
+  geography = "state", 
+  year = 2022,
+  variables = "B01003_001E",
+  geometry = TRUE,
+  progress = FALSE
+)
+
+cont_us2 <- us2 %>% filter(NAME != 'Alaska' & NAME != 'Hawaii' & NAME != 'Puerto Rico')
+
+raster_data <- rast("SR_50M.tif")
+raster_crs <- crs(raster_data, proj = TRUE) 
+us2_transformed <- st_transform(cont_us2, crs = raster_crs)
+
+raster_clipped <- crop(raster_data, ext(us2_transformed))      
+raster_clipped <- mask(raster_clipped, vect(us2_transformed)) 
+
+target_crs <- "EPSG:5070"
+raster_projected <- project(raster_clipped, target_crs)    
+
+raster_df <- as.data.frame(raster_projected, xy = TRUE)
+
+hurricanes_east_coast <- st_transform(hurricanes_east_coast, crs = st_crs(raster_projected)$wkt)
+
+raster_masked <- mask(raster_projected, vect(hurricanes_east_coast))
+
+
+raster_clipped_df <- as.data.frame(raster_masked, xy = TRUE)
+
+
+all_countries <- st_read("World_Countries_(Generalized)_9029012925078512962.geojson")
+all_countries <- st_transform(all_countries, crs = 'EPSG:5070')
+all_countries <- all_countries %>%
+  filter(COUNTRY %in% 'United States')
+
+all_countries_transformed <- st_transform(all_countries, crs = st_crs(east_coast_bbox_sf))
+
+all_countries_clipped <- st_intersection(all_countries_transformed, east_coast_bbox_sf)
+
+
+
+ggplot() +
+  geom_sf(data = hurricanes_east_coast, aes(fill = Per_year, alpha = Per_year > 0), color = NA) +
+  scale_fill_gradient(
+    low = "#191328",
+    high = "#caddee",
+    na.value = "transparent",
+    name = "Hurricane Frequency, Per County (1842 - 2021)"
+  ) +
+  scale_alpha_manual(
+    values = c("TRUE" = 1, "FALSE" = 0), 
+    guide = "none"                      
+  ) +
+  with_shadow(
+    geom_sf(data = all_countries_clipped, fill = "transparent", lwd = .2, color = "#191328"),
+    colour = "black",        
+    x_offset = 0,           
+    y_offset = 0,            
+    sigma = 8,              
+    alpha = 1              
+  ) +
+  with_shadow(
+    geom_sf(data = all_countries_clipped, fill = "transparent", lwd = .2, color = "#191328"),
+    colour = "white",        
+    x_offset = 4,            
+    y_offset = 4,            
+    sigma = 8,               
+    alpha = 1              
+  ) +
+  geom_sf(data = cont_us, fill = NA, color = "#191328", lwd = 0.2, alpha = .3) + 
+  geom_sf(data = all_countries_clipped, fill = "transparent", color = "white") + 
+  labs(
+    title = "HURRICANE \nFREQUENCY ",
+    subtitle = "United States - Gulf of Mexico and Atlantic Coastline"
+  ) +
+  theme_void() +
+  theme(
+    plot.title = element_text(hjust = 0.28, vjust = -22, size = 80, face = "bold", color = "#c6ecf9", family = "Impact"),
+    plot.subtitle = element_text(hjust = 0.32, vjust = -90, size = 10, color = "#8ca5b6", family = "Eina02-SemiboldItalic"),
+    legend.position = c(0.48, 0.1), # Position the legend at the bottom
+    legend.direction = "horizontal", # Make the legend horizontal
+    legend.title = element_text(size = 7, color = "#8ca5b6", family = "Eina02-RegularItalic", hjust = 0.5,),
+    legend.text = element_text(size = 6, color = "#8ca5b6", family = "Eina02-RegularItalic"),
+    plot.background = element_rect(fill = "#140e1e", color = NA),   
+    panel.background = element_rect(fill = "#140e1e", color = NA),  
+    plot.margin = margin(t = -190, r = 0, b = -80, l = -100),           
+    axis.text = element_blank(),                                  
+    axis.ticks = element_blank(),                                  
+    legend.key.height = unit(0.4, "cm"),    
+    legend.key.width = unit(1.2, "cm"),          
+    legend.box.spacing = unit(0.5, "cm"),
+    legend.title.position = "top"
+  )
+```
+
